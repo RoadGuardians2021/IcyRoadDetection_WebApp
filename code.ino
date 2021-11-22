@@ -99,156 +99,6 @@ void setup()
 
 } //end of void setup()
 
-void sort(float arr[], int size)
-{
-  for (int i = 0; i < (size - 1); i++)
-  {
-    for (int j = 0; j < (size - (i + 1)); j++)
-    {
-      if (arr[j] > arr[j + 1])
-      {
-        int k = arr[j];
-        arr[j] = arr[j + 1];
-        arr[j + 1] = k;
-      }
-    }
-  }
-}
-
-float runCurrent()
-{
-  float currentAverage = 0;
-  bool isOutliers = false;
-  float iqr;
-  float upper;
-  float lower;
-  float iterate = 0;
-
-  // Run while there are outliers and less than 6 iterations
-  while (isOutliers && iterate < 5)
-  {
-    currentAverage = 0;
-
-    // Populate array with readings
-    for (int i = 0; i < 15; i++)
-    {
-      currentValues[i] = ina219.getCurrent_mA();
-      currentAverage += currentValues[i];
-
-      delay(100);
-    }
-
-    // Get average of values
-    currentAverage /= 15;
-
-    // Sort array
-    sort(currentValues, 15);
-
-    // Find inter-quartile range
-    iqr = currentValues[11] - currentValues[3];
-    iqr *= 1.5;
-
-    // Get upper and lower bounds
-    upper = iqr + currentValues[11];
-    lower = currentValues[3] - iqr;
-
-    // Check for outliers
-    for (int i = 0; i < 15; i++)
-    {
-      // If there is an outlier
-      if (currentValues[i] > upper || currentValues[i] < lower)
-      {
-        // Set isOutliers to true and break the for loop
-        isOutliers = true;
-        break;
-      }
-      else
-      {
-        isOutliers = false;
-      }
-    }
-
-    iterate++;
-  }
-
-  // Check if while loop timed out
-  if (isOutliers)
-  {
-    // Return error value
-    return -1000;
-  }
-
-  // Return average value
-  return currentAverage;
-}
-
-float runThermistor()
-{
-  float tempAverage = 0;
-  bool isOutliers = false;
-  float iqr;
-  float upper;
-  float lower;
-  float iterate = 0;
-
-  // Run while there are outliers and less than 6 iterations
-  while (isOutliers && iterate < 5)
-  {
-    tempAverage = 0;
-
-    // Populate array with readings
-    for (int i = 0; i < 15; i++)
-    {
-      tempValues[i] = analogRead(THERMISTORPIN);
-      tempAverage += tempValues[i];
-
-      delay(100);
-    }
-
-    // Get average of values
-    tempAverage /= 15;
-
-    // Sort array
-    sort(tempValues, 15);
-
-    // Find inter-quartile range
-    iqr = tempValues[11] - tempValues[3];
-    iqr *= 1.5;
-
-    // Get upper and lower bounds
-    upper = iqr + tempValues[11];
-    lower = tempValues[3] - iqr;
-
-    // Check for outliers
-    for (int i = 0; i < 15; i++)
-    {
-      // If there is an outlier
-      if (tempValues[i] > upper || tempValues[i] < lower)
-      {
-        // Set isOutliers to true and break the for loop
-        isOutliers = true;
-        break;
-      }
-      else
-      {
-        isOutliers = false;
-      }
-    }
-
-    iterate++;
-  }
-
-  // Check if while loop timed out
-  if (isOutliers)
-  {
-    // Return error value
-    return -1000;
-  }
-
-  // Return average value
-  return tempAverage;
-}
-
 void loop() /*************************************main loop*************************************/
 {
   /**************************************************************************************** Getting samples of samples thermistor values*/
@@ -338,3 +188,153 @@ void loop() /*************************************main loop*********************
   delay(60000);
 
 } //end of void loop()
+
+float runCurrent()
+{
+  float currentAverage = 0;
+  bool isOutliers = true;
+  float iqr;
+  float upper;
+  float lower;
+  float iterate = 0;
+
+  // Run while there are outliers and less than 6 iterations
+  while (isOutliers && iterate < 5)
+  {
+    currentAverage = 0;
+
+    // Populate array with readings
+    for (int i = 0; i < 15; i++)
+    {
+      currentValues[i] = ina219.getCurrent_mA();
+      currentAverage += currentValues[i];
+
+      delay(100);
+    }
+
+    // Get average of values
+    currentAverage /= 15;
+
+    // Sort array
+    sort(currentValues, 15);
+
+    // Find inter-quartile range
+    iqr = currentValues[11] - currentValues[3];
+    iqr *= 1.5;
+
+    // Get upper and lower bounds
+    upper = iqr + currentValues[11];
+    lower = currentValues[3] - iqr;
+
+    // Check for outliers
+    for (int i = 0; i < 15; i++)
+    {
+      // If there is an outlier
+      if (currentValues[i] > upper || currentValues[i] < lower)
+      {
+        // Set isOutliers to true and break the for loop
+        isOutliers = true;
+        break;
+      }
+      else
+      {
+        isOutliers = false;
+      }
+    }
+
+    iterate++;
+  }
+
+  // Check if while loop timed out
+  if (isOutliers)
+  {
+    // Return error value
+    return -1000;
+  }
+
+  // Return average value
+  return currentAverage;
+}
+
+float runThermistor()
+{
+  float tempAverage = 0;
+  bool isOutliers = true;
+  float iqr;
+  float upper;
+  float lower;
+  float iterate = 0;
+
+  // Run while there are outliers and less than 6 iterations
+  while (isOutliers && iterate < 5)
+  {
+    tempAverage = 0;
+
+    // Populate array with readings
+    for (int i = 0; i < 15; i++)
+    {
+      tempValues[i] = analogRead(THERMISTORPIN);
+      tempAverage += tempValues[i];
+
+      delay(100);
+    }
+
+    // Get average of values
+    tempAverage /= 15;
+
+    // Sort array
+    sort(tempValues, 15);
+
+    // Find inter-quartile range
+    iqr = tempValues[11] - tempValues[3];
+    iqr *= 1.5;
+
+    // Get upper and lower bounds
+    upper = iqr + tempValues[11];
+    lower = tempValues[3] - iqr;
+
+    // Check for outliers
+    for (int i = 0; i < 15; i++)
+    {
+      // If there is an outlier
+      if (tempValues[i] > upper || tempValues[i] < lower)
+      {
+        // Set isOutliers to true and break the for loop
+        isOutliers = true;
+        break;
+      }
+      else
+      {
+        isOutliers = false;
+      }
+    }
+
+    iterate++;
+  }
+
+  // Check if while loop timed out
+  if (isOutliers)
+  {
+    // Return error value
+    return -1000;
+  }
+
+  // Return average value
+  return tempAverage;
+}
+
+void sort(float arr[], int size)
+{
+  for (int i = 0; i < (size - 1); i++)
+  {
+    for (int j = 0; j < (size - (i + 1)); j++)
+    {
+      if (arr[j] > arr[j + 1])
+      {
+        int k = arr[j];
+        arr[j] = arr[j + 1];
+        arr[j + 1] = k;
+      }
+    }
+  }
+}
