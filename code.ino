@@ -58,7 +58,7 @@ void setup()
   // define channel to send data on. MULTI means data will be sent to a random channel.
   lora.setChannel(CH1);
   // set datarate
-  lora.setDatarate(SF10BW125);
+  lora.setDatarate(SF9BW125);
   // set tx power
   lora.setPower(20);
 
