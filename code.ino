@@ -30,7 +30,7 @@ uint8_t NwkSkey[16] = { 0x5d, 0x7f, 0x0f, 0xc5, 0x0d, 0x0e, 0x8a, 0x81, 0x8f, 0x
 uint8_t AppSkey[16] = { 0x24, 0x20, 0x9e, 0xe6, 0xcf, 0x81, 0xe1, 0x8d, 0x9c, 0x19, 0x38, 0x87, 0xe3, 0xcc, 0x3f, 0x6d }; //key for encoding the data from the device to the application server.  
 
 // Device Address (MSB)
-uint8_t DevAddr[4] = { 0x01, 0x4c, 0xb8, 0x28 }; 
+uint8_t DevAddr[4] = { 0x01, 0x4c, 0xb8, 0x28 }; //Used by the network server to identify the device.
 
 
 /************************** Example Begins Here ***********************************/
@@ -59,10 +59,10 @@ void setup()
   lora.setChannel(CH1);
   // set datarate
   lora.setDatarate(SF9BW125);
-  // set tx power
+  // set transmitter power
   lora.setPower(20);
 
-  if (!lora.begin()) 
+  if (!lora.begin()) //if LoRa fails to initialize, print this to serial monitor and wait
   {
     Serial.println("Failed");
     Serial.println("Check your radio");
@@ -70,40 +70,24 @@ void setup()
   }
   Serial.println("OK");
 
-  /*******************************************************************************************Adafruit INA219*******************************/
-
-  /***line below is commented out so board runs automatically when board gets power**/
-  
-  /** while (!Serial) {
-    // will pause Zero, Leonardo, etc until serial console opens. Note, this line needs to be removed when board is not plugged into a computer.
-    delay(1);
-  }**/
-
   uint32_t currentFrequency;
 
   Serial.println("Hello!");
-
-  // Initialize the INA219.
-  // By default the initialization will use the largest range (32V, 2A).  However
-  // you can call a setCalibration function to change this range (see comments).
+  
   if (! ina219.begin()) {
-    Serial.println("Failed to find INA219 chip");
+    Serial.println("Failed to find INA219 chip"); //If current sensor fails to initialize, print this to serial monitor and wait
     while (1) {
       delay(10);
     }
   }
-  // To use a slightly lower 32V, 1A range (higher precision on amps):
-  //ina219.setCalibration_32V_1A();
-  // Or to use a lower 16V, 400mA range (higher precision on volts and amps):
-  //ina219.setCalibration_16V_400mA();
 
   Serial.println("Measuring voltage and current with INA219 ...");
 
-} //end of void setup()
+} //end of setup loop
 
 void loop() /*************************************main loop*************************************/
 {
-  /**************************************************************************************** Getting samples of samples thermistor values*/
+  /****************************Getting samples of samples thermistor values************************************************************************************************************/
 
   uint8_t i;
   float temp = runThermistor();
@@ -124,12 +108,13 @@ void loop() /*************************************main loop*********************
   steinhart /= BCOEFFICIENT;                   // 1/B * ln(R/Ro)
   steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15); // + (1/To)
   steinhart = 1.0 / steinhart;                 // Invert
-  steinhart -= 273.15;                         // convert absolute temp to C
+  steinhart -= 273.15;                         // convert absolute temp to Celsius
+  steinhart = (steinhart * 1.8) + 32;          // convert to temperature in Fahrenheit
 
-  Serial.print("Temperature ");
+  Serial.print("Temperature: ");
   Serial.print(steinhart);
-  Serial.println(" *C");
-  String string1 = String(steinhart) + " C";
+  Serial.println(" F");
+  String string1 = String(steinhart) + " F";
   Serial.println(string1);
 
   /*************************************************************************************************Current sensor data down below********************/
@@ -160,9 +145,9 @@ void loop() /*************************************main loop*********************
 
   /************transmitting data*****************************************************/
 
-  /*****device only transmits the sensor data when temperature is below about 39 degrees fahrenheit****/
-  if(steinhart <= 4.0){
-    Serial.println("Temperature is below 4.4 degrees Celcius");
+  /*****device only transmits the sensor data when temperature is below 40 degrees fahrenheit****/
+  if(steinhart <= 40.0){
+    Serial.println("Temperature is below 40 degrees Fahrenheit");
     Serial.println("Sending LoRa Data...");
     lora.sendData(loraData, sizeof(loraData), lora.frameCounter); //TinyLora library function to transmit data
     Serial.print("Frame Counter: "); Serial.println(lora.frameCounter);
@@ -178,8 +163,8 @@ void loop() /*************************************main loop*********************
   
   } /****end of if loop**************************************************************************************************************************************************************************************/
   
-  else if(steinhart > 4.0){
-    Serial.println("Temperature above 4.4 degrees Celcius");
+  else if(steinhart > 40.0){
+    Serial.println("Temperature above 40 degrees Fahrenheit. The sensor data will not be transmitted");
 
     delay(300000); //wait for 300 seconds (5 minutes) before checking sensor values
     
@@ -188,7 +173,7 @@ void loop() /*************************************main loop*********************
   else{
     Serial.println("Error as temperature should be below, equal to, or above 4.4 degree celcius");
     
-    delay(60000); //wait for 60 seconds (1 minute) before checking sensor values 
+    delay(5000); //wait for 5 seconds before checking conditions again as hitting this loop indicates that the thermistor is malfunctioning and will hopefully collect a valid temperature value on the next pass.  
       } /*end of else loop*******************************************************************************************************************************************************************/
   
 } //end of void loop()
