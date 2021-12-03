@@ -171,7 +171,7 @@ void loop() /*************************************main loop*********************
   } /****end of else if loop*************************************************************************************************************************************************************************/
   
   else{
-    Serial.println("Error as temperature should be below, equal to, or above 4.4 degree celcius");
+    Serial.println("Error as temperature should be below, equal to, or above 40 degrees Fahrenheit");
     
     delay(5000); //wait for 5 seconds before checking conditions again as hitting this loop indicates that the thermistor is malfunctioning and will hopefully collect a valid temperature value on the next pass.  
       } /*end of else loop*******************************************************************************************************************************************************************/
